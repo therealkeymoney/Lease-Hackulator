@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVP Consulting Invoice</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+    }
+    #invoice {
+        background: white;
+        padding: 20px;
+        max-width: 800px;
+        margin: auto;
+        border: 1px solid #ccc;
+    }
+    h1 {
+        margin: 0;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    table, th, td {
+        border: 1px solid #ddd;
+    }
+    th, td {
+        padding: 10px;
+        text-align: left;
+    }
+    /* 🔹 Visible input styling for screen */
+    input, textarea {
+        width: 100%;
+        background: #fff;
+        color: #222;
+        border: 1px solid #ccc;
+        padding: 5px;
+        box-sizing: border-box;
+    }
+    input:focus, textarea:focus {
+        background: #fff;
+        color: #222;
+        outline: 2px solid #4A90E2;
+    }
+    .buttons {
+        text-align: right;
+        margin-top: 20px;
+    }
+    button {
+        padding: 8px 15px;
+        margin-left: 10px;
+        background: #333;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #555;
+    }
+    /* 🔹 Print-specific styles */
+    @media print {
+        body {
+            margin: 0;
+            padding: 0;
+            background: white;
+            color: black;
+        }
+        input, textarea {
+            border: none;
+            background: transparent;
+            color: black;
+        }
+        button {
+            display: none;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="invoice">
+    <h1>AVP Consulting</h1>
+    <p>
+        Address: <input type="text" placeholder="Your Address"><br>
+        Phone: <input type="text" placeholder="Your Phone"><br>
+        Email: <input type="email" placeholder="Your Email">
+    </p>
+
+    <table>
+        <tr>
+            <td>Invoice #</td>
+            <td><input type="text" value="INV-001"></td>
+            <td>Date</td>
+            <td><input type="date" id="invoiceDate"></td>
+        </tr>
+        <tr>
+            <td>Bill To</td>
+            <td colspan="3"><input type="text" placeholder="Client Name & Address"></td>
+        </tr>
+    </table>
+
+    <table id="itemsTable">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Amount</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="itemsBody">
+            <tr>
+                <td><input type="text" placeholder="Service or Product"></td>
+                <td><input type="number" value="1" min="1" oninput="calculateTotals()"></td>
+                <td><input type="number" value="0" min="0" step="0.01" oninput="calculateTotals()"></td>
+                <td>$0.00</td>
+                <td><button onclick="removeItem(this)">X</button></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="buttons">
+        <button onclick="addItem()">Add Item</button>
+    </div>
+
+    <p>
+        Subtotal: $<span id="subtotal">0.00</span><br>
+        Tax (%): <input type="number" id="tax" value="0" min="0" oninput="calculateTotals()"><br>
+        Total: $<span id="total">0.00</span>
+    </p>
+
+    <p>
+        Payment Terms: <input type="text" value="Net 30 days">
+    </p>
+</div>
+
+<div class="buttons">
+    <button onclick="printInvoice()">Print Invoice</button>
+</div>
+
+<script>
+    // Auto set today's date
+    document.getElementById('invoiceDate').valueAsDate = new Date();
+
+    function calculateTotals() {
+        let rows = document.querySelectorAll("#itemsBody tr");
+        let subtotal = 0;
+        rows.forEach(row => {
+            let qty = parseFloat(row.cells[1].querySelector("input").value) || 0;
+            let rate = parseFloat(row.cells[2].querySelector("input").value) || 0;
+            let amount = qty * rate;
+            row.cells[3].innerText = "$" + amount.toFixed(2);
+            subtotal += amount;
+        });
+        let taxRate = parseFloat(document.getElementById("tax").value) || 0;
+        let total = subtotal + (subtotal * taxRate / 100);
+        document.getElementById("subtotal").innerText = subtotal.toFixed(2);
+        document.getElementById("total").innerText = total.toFixed(2);
+    }
+
+    function addItem() {
+        let row = document.createElement("tr");
+        row.innerHTML = `
+            <td><input type="text" placeholder="Service or Product"></td>
+            <td><input type="number" value="1" min="1" oninput="calculateTotals()"></td>
+            <td><input type="number" value="0" min="0" step="0.01" oninput="calculateTotals()"></td>
+            <td>$0.00</td>
+            <td><button onclick="removeItem(this)">X</button></td>
+        `;
+        document.getElementById("itemsBody").appendChild(row);
+    }
+
+    function removeItem(button) {
+        button.parentElement.parentElement.remove();
+        calculateTotals();
+    }
+
+    function printInvoice() {
+        let invoiceElement = document.getElementById('invoice');
+        let printWindow = window.open('', '', 'width=900,height=650');
+        printWindow.document.write('<html><head><title>Print Invoice</title>');
+        printWindow.document.write('<style>@media print { body{ font-family: Arial; } button{ display:none; } input, textarea{ border:none; background:transparent; color:black; } }</style>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(invoiceElement.outerHTML);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.onload = function () {
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        };
+    }
+
+    // Initial totals
+    calculateTotals();
+</script>
+
+</body>
+</html>

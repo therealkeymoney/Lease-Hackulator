@@ -1472,9 +1472,32 @@ function xml2json(xmlStr) {
     return walk(parser.documentElement);
 }
 
-async function fetchJSON(url) {
-    const response = await fetch(url);
-    return response.json();
+async function fetchJSON(url, options = {}, fallback = null) {
+    try {
+        const response = await fetch(url, {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.warn(`Failed to fetch data from ${url}:`, error);
+        
+        if (fallback !== null) {
+            console.log('Using fallback data');
+            return fallback;
+        }
+        
+        throw new Error(`Network request failed: ${error.message}`);
+    }
 }
 
 // ===============================================
@@ -1490,27 +1513,58 @@ let STATE_CREDITS = {};
 
 async function preloadIncentiveData() {
     try {
-        // Load federal credits
-        const xmlResponse = await fetch('https://www.fueleconomy.gov/ws/rest/vehicles/taxcredit?format=json');
-        const xmlText = await xmlResponse.text();
-        const xmlData = xml2json(xmlText);
+        console.log('Loading live incentive data...');
         
-        if (xmlData.vehicles && xmlData.vehicles.vehicle) {
-            FED_CREDITS = xmlData.vehicles.vehicle.map(v => ({
-                make: v.make,
-                model: v.model,
-                year: parseInt(v.year),
-                amount: parseInt(v.credit)
-            }));
+        // Load federal credits with error handling
+        try {
+            const xmlResponse = await fetchJSON(
+                'https://www.fueleconomy.gov/ws/rest/vehicles/taxcredit?format=json',
+                { timeout: 10000 },
+                null
+            );
+            
+            if (xmlResponse && typeof xmlResponse === 'string') {
+                const xmlData = xml2json(xmlResponse);
+                
+                if (xmlData?.vehicles?.vehicle) {
+                    const vehicles = Array.isArray(xmlData.vehicles.vehicle) 
+                        ? xmlData.vehicles.vehicle 
+                        : [xmlData.vehicles.vehicle];
+                        
+                    FED_CREDITS = vehicles.map(v => ({
+                        make: v.make || '',
+                        model: v.model || '',
+                        year: parseInt(v.year) || 0,
+                        amount: parseInt(v.credit) || 0
+                    })).filter(v => v.make && v.model && v.year && v.amount);
+                    
+                    console.log(`Loaded ${FED_CREDITS.length} federal credit entries`);
+                }
+            }
+        } catch (federalError) {
+            console.warn('Failed to load federal credits:', federalError);
+            FED_CREDITS = [];
         }
 
-        // Load state credits
-        STATE_CREDITS = await fetchJSON('https://evincentive.kbb.com/api/state/summary');
+        // Load state credits with error handling
+        try {
+            STATE_CREDITS = await fetchJSON(
+                'https://evincentive.kbb.com/api/state/summary',
+                { timeout: 10000 },
+                EV_INCENTIVES?.state || {}
+            );
+        } catch (stateError) {
+            console.warn('Failed to load state credits:', stateError);
+            STATE_CREDITS = EV_INCENTIVES?.state || {};
+        }
+        
+        console.log('Live incentive data loading completed');
+        
     } catch (error) {
-        console.warn('Failed to load live incentive data:', error);
+        console.error('Failed to load live incentive data:', error);
         // Use fallback static data
         FED_CREDITS = [];
-        STATE_CREDITS = EV_INCENTIVES.state;
+        STATE_CREDITS = EV_INCENTIVES?.state || {};
     }
 }
 
@@ -1563,30 +1617,85 @@ function getStateCredit(stateCode) {
 // ===============================================
 
 async function decodeVIN(vin, suffix) {
-    if (vin.length !== 17) return;
+    // Validate VIN format first
+    if (!vin || vin.length !== 17) {
+        console.warn('Invalid VIN length');
+        return;
+    }
+    
+    // Additional VIN validation
+    const cleanVin = vin.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+    if (cleanVin.length !== 17 || /[IOQ]/.test(cleanVin)) {
+        console.warn('Invalid VIN format');
+        return;
+    }
     
     try {
-        const response = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/${vin}?format=json`);
-        const data = await response.json();
-        const results = data.Results;
+        console.log(`Decoding VIN: ${vin}`);
         
-        const make = results.find(r => r.Variable === 'Make')?.Value || 
-                    results.find(r => r.Variable === 'Manufacturer')?.Value || '';
-        const model = results.find(r => r.Variable === 'Model')?.Value || '';
-        const year = results.find(r => r.Variable === 'Model Year')?.Value || '';
+        const response = await fetchJSON(
+            `https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVin/${vin}?format=json`,
+            { timeout: 10000 },
+            null
+        );
         
-        // Update form fields
-        if (make) document.getElementById(`make${suffix}`).value = make;
-        if (model) document.getElementById(`model${suffix}`).value = model;
-        if (year) document.getElementById(`year${suffix}`).value = year;
+        if (!response?.Results) {
+            throw new Error('Invalid response from VIN decode API');
+        }
+        
+        const results = response.Results;
+        
+        // Extract data with better error handling
+        const make = extractVinValue(results, ['Make', 'Manufacturer']);
+        const model = extractVinValue(results, ['Model']);
+        const year = extractVinValue(results, ['Model Year']);
+        
+        if (!make || !model || !year) {
+            throw new Error('Incomplete VIN data received');
+        }
+        
+        // Update form fields safely
+        updateFormField(`make${suffix}`, make);
+        updateFormField(`model${suffix}`, model);
+        updateFormField(`year${suffix}`, year);
         
         // Update dependent fields
         updateFees(suffix);
         updateEVCredits(suffix);
         
+        console.log(`VIN decoded successfully: ${year} ${make} ${model}`);
+        
     } catch (error) {
-        console.warn('VIN decode failed:', error);
+        console.error('VIN decode failed:', error);
+        // Show user-friendly error message
+        showVinDecodeError(suffix, error.message);
     }
+}
+
+// Helper function to extract values from VIN decode results
+function extractVinValue(results, variables) {
+    for (const variable of variables) {
+        const result = results.find(r => r.Variable === variable);
+        if (result && result.Value && result.Value !== 'Not Applicable') {
+            return result.Value;
+        }
+    }
+    return null;
+}
+
+// Helper function to safely update form fields
+function updateFormField(fieldId, value) {
+    const element = document.getElementById(fieldId);
+    if (element && value) {
+        element.value = value;
+    }
+}
+
+// Helper function to show VIN decode errors
+function showVinDecodeError(suffix, message) {
+    // This would ideally show a user-friendly error message
+    // For now, just log it
+    console.warn(`VIN decode error for vehicle ${suffix}: ${message}`);
 }
 
 // ===============================================

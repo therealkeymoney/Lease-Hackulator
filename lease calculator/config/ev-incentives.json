@@ -1,0 +1,142 @@
+{
+  "stateIncentives": {
+    "CA": {
+      "rebate": 2000,
+      "program": "CVRP",
+      "additionalPrograms": {
+        "CVRP": {
+          "standard": 2000,
+          "lowIncome": 4500,
+          "veryLowIncome": 7000
+        }
+      }
+    },
+    "CO": {
+      "rebate": 5000,
+      "program": "Colorado EV Tax Credit"
+    },
+    "CT": {
+      "rebate": 3000,
+      "program": "CHEAPR"
+    },
+    "GA": {
+      "rebate": 2500,
+      "program": "Georgia EV Tax Credit"
+    },
+    "IL": {
+      "rebate": 4000,
+      "program": "Illinois EV Rebate",
+      "additionalPrograms": {
+        "Illinois EV Rebate": {
+          "standard": 4000,
+          "lowIncome": 8000
+        }
+      }
+    },
+    "MA": {
+      "rebate": 2500,
+      "program": "MOR-EV",
+      "additionalPrograms": {
+        "MOR-EV": {
+          "standard": 2500,
+          "lowIncome": 3500
+        }
+      }
+    },
+    "MN": {
+      "rebate": 2500,
+      "program": "Minnesota EV Rebate",
+      "requirements": ["Income qualified", "New vehicle purchase", "Minnesota resident"]
+    },
+    "NJ": {
+      "rebate": 5000,
+      "program": "Charge Up New Jersey",
+      "additionalPrograms": {
+        "Charge Up New Jersey": {
+          "standard": 5000,
+          "usedEV": 2500
+        }
+      }
+    },
+    "NY": {
+      "rebate": 2000,
+      "program": "Drive Clean Rebate",
+      "additionalPrograms": {
+        "Drive Clean Rebate": {
+          "standard": 2000,
+          "lowIncome": 6000
+        }
+      }
+    },
+    "OR": {
+      "rebate": 2500,
+      "program": "Oregon Clean Vehicle Rebate",
+      "additionalPrograms": {
+        "Oregon Clean Vehicle Rebate": {
+          "standard": 2500,
+          "lowIncome": 5000,
+          "chargeAhead": 2500
+        }
+      }
+    },
+    "PA": {
+      "rebate": 1750,
+      "program": "Alternative Fuel Vehicle Rebate",
+      "additionalPrograms": {
+        "Alternative Fuel Vehicle Rebate": {
+          "standard": 1750,
+          "fleet": 2000
+        }
+      }
+    },
+    "TX": {
+      "rebate": 2500,
+      "program": "Texas EV Rebate",
+      "additionalPrograms": {
+        "Texas EV Rebate": {
+          "standard": 2500,
+          "lowIncome": 5000
+        }
+      }
+    },
+    "VT": {
+      "rebate": 3000,
+      "program": "Incentive Program for New PEVs",
+      "additionalPrograms": {
+        "Incentive Program for New PEVs": {
+          "standard": 3000,
+          "lowIncome": 5000,
+          "usedEV": 1500
+        }
+      }
+    },
+    "WA": {
+      "rebate": 0,
+      "otherIncentives": [
+        "HOV lane access",
+        "Sales tax exemption on EVs under $45k",
+        "Reduced ferry fares"
+      ]
+    }
+  },
+  "federalIncentives": {
+    "newEV": {
+      "maxCredit": 7500,
+      "incomeEligibility": {
+        "singleFiler": 150000,
+        "headOfHousehold": 225000,
+        "jointFilers": 300000
+      }
+    },
+    "usedEV": {
+      "maxCredit": 4000,
+      "maxVehiclePrice": 25000,
+      "ageRequirement": "2+ years old",
+      "incomeEligibility": {
+        "singleFiler": 75000,
+        "headOfHousehold": 112500,
+        "jointFilers": 150000
+      }
+    }
+  }
+}

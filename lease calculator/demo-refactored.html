@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lease Hackulator - Refactored Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        input.error {
+            border-color: #dc3545;
+            background-color: #fff5f5;
+        }
+        input.loading {
+            background-color: #f8f9fa;
+            background-image: linear-gradient(45deg, transparent 25%, rgba(255,255,255,.5) 25%, rgba(255,255,255,.5) 50%, transparent 50%, transparent 75%, rgba(255,255,255,.5) 75%, rgba(255,255,255,.5));
+            background-size: 20px 20px;
+            animation: loading-animation 1s linear infinite;
+        }
+        @keyframes loading-animation {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 20px; }
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .success-message {
+            color: #28a745;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .demo-section {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .demo-section h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .results {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lease Hackulator - Refactored Demo</h1>
+        <p>This demonstrates the refactored modular architecture with improved error handling, accessibility, and performance.</p>
+
+        <!-- VIN Decoding Demo -->
+        <div class="demo-section">
+            <h3>🔍 VIN Decoding Demo</h3>
+            <div class="form-group">
+                <label for="demo-vin">Enter VIN (17 characters):</label>
+                <input type="text" 
+                       id="demo-vin" 
+                       maxlength="17" 
+                       placeholder="1HGBH41JXMN109186"
+                       aria-label="Vehicle VIN input"
+                       aria-describedby="vin-help">
+                <div id="vin-help" class="sr-only">Enter 17-character Vehicle Identification Number</div>
+                <div id="vin-error" class="error-message" style="display: none;" role="alert"></div>
+                <div id="vin-success" class="success-message" style="display: none;"></div>
+            </div>
+            <button onclick="testVinDecoding()">Decode VIN</button>
+            <div id="vin-results" class="results" style="display: none;"></div>
+        </div>
+
+        <!-- ZIP Code Validation Demo -->
+        <div class="demo-section">
+            <h3>📍 ZIP Code Validation Demo</h3>
+            <div class="form-group">
+                <label for="demo-zip">Enter ZIP Code:</label>
+                <input type="text" 
+                       id="demo-zip" 
+                       placeholder="12345"
+                       aria-label="ZIP code input">
+                <div id="zip-result" class="results" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- State Tax Demo -->
+        <div class="demo-section">
+            <h3>💰 State Tax Lookup Demo</h3>
+            <div class="form-group">
+                <label for="demo-state">Select State:</label>
+                <select id="demo-state" aria-label="State selection">
+                    <option value="">Select a state...</option>
+                </select>
+                <div id="tax-result" class="results" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- API Status -->
+        <div class="demo-section">
+            <h3>🌐 Service Status</h3>
+            <div id="service-status">Initializing...</div>
+        </div>
+
+        <!-- Screen Reader Announcements -->
+        <div class="sr-only" aria-live="polite" id="announcer"></div>
+    </div>
+
+    <!-- Load the refactored modules -->
+    <script src="js/utils.js"></script>
+    <script src="js/data-service.js"></script>
+    <script src="js/lease-hackulator.js"></script>
+    
+    <script>
+        // Demo application
+        let demoApp = {
+            initialized: false,
+            
+            async init() {
+                try {
+                    console.log('Initializing demo application...');
+                    
+                    // Wait for LeaseHackulator to be available
+                    if (!window.LeaseHackulator || !window.LeaseHackulator.dataService) {
+                        console.log('Waiting for LeaseHackulator...');
+                        setTimeout(() => this.init(), 100);
+                        return;
+                    }
+                    
+                    // Initialize data service
+                    await window.LeaseHackulator.dataService.initialize();
+                    
+                    // Setup UI
+                    this.setupUI();
+                    this.setupEventListeners();
+                    
+                    this.initialized = true;
+                    document.getElementById('service-status').innerHTML = '✅ All services initialized successfully';
+                    
+                    console.log('Demo application initialized');
+                    
+                } catch (error) {
+                    console.error('Demo initialization failed:', error);
+                    document.getElementById('service-status').innerHTML = '❌ Service initialization failed: ' + error.message;
+                }
+            },
+            
+            setupUI() {
+                // Populate state dropdown
+                const stateSelect = document.getElementById('demo-state');
+                const states = window.LeaseHackulator.dataService.stateTaxRates || [];
+                
+                states.forEach(state => {
+                    const option = document.createElement('option');
+                    option.value = state.code;
+                    option.textContent = `${state.name} (${state.tax}%)`;
+                    stateSelect.appendChild(option);
+                });
+            },
+            
+            setupEventListeners() {
+                // ZIP code validation with debouncing
+                const zipInput = document.getElementById('demo-zip');
+                const debouncedZipHandler = window.LeaseHackulator.debounce((e) => {
+                    this.validateZipCode(e.target.value);
+                }, 300);
+                zipInput.addEventListener('input', debouncedZipHandler);
+                
+                // State selection
+                const stateSelect = document.getElementById('demo-state');
+                stateSelect.addEventListener('change', (e) => {
+                    this.showTaxRate(e.target.value);
+                });
+                
+                // VIN input validation
+                const vinInput = document.getElementById('demo-vin');
+                vinInput.addEventListener('input', (e) => {
+                    this.validateVinInput(e.target.value);
+                });
+            },
+            
+            validateZipCode(zip) {
+                const result = document.getElementById('zip-result');
+                
+                if (!zip) {
+                    result.style.display = 'none';
+                    return;
+                }
+                
+                const isValid = window.LeaseHackulator.validateZipCode(zip);
+                const normalized = window.LeaseHackulator.normalizeZipCode(zip);
+                const state = window.LeaseHackulator.dataService.getStateFromZip(zip);
+                
+                result.innerHTML = `
+                    <strong>ZIP Code Analysis:</strong><br>
+                    Valid format: ${isValid ? '✅' : '❌'}<br>
+                    Normalized: ${normalized}<br>
+                    State: ${state || 'Unknown'}
+                `;
+                result.style.display = 'block';
+            },
+            
+            validateVinInput(vin) {
+                const input = document.getElementById('demo-vin');
+                const isValid = window.LeaseHackulator.validateVIN(vin) || vin.length < 17;
+                
+                if (isValid) {
+                    input.classList.remove('error');
+                } else {
+                    input.classList.add('error');
+                }
+            },
+            
+            showTaxRate(stateCode) {
+                const result = document.getElementById('tax-result');
+                
+                if (!stateCode) {
+                    result.style.display = 'none';
+                    return;
+                }
+                
+                const taxRate = window.LeaseHackulator.dataService.getStateTaxRate(stateCode);
+                const stateInfo = window.LeaseHackulator.dataService.getStateInfo(stateCode);
+                const stateCredit = window.LeaseHackulator.dataService.getStateCredit(stateCode);
+                
+                result.innerHTML = `
+                    <strong>State Information:</strong><br>
+                    Tax Rate: ${taxRate}%<br>
+                    EV Rebate: $${stateCredit.rebate.toLocaleString()}<br>
+                    Program: ${stateCredit.program || 'None'}
+                `;
+                result.style.display = 'block';
+            }
+        };
+        
+        // Global function for VIN decoding demo
+        async function testVinDecoding() {
+            const vinInput = document.getElementById('demo-vin');
+            const errorDiv = document.getElementById('vin-error');
+            const successDiv = document.getElementById('vin-success');
+            const resultsDiv = document.getElementById('vin-results');
+            const vin = vinInput.value.trim();
+            
+            // Clear previous results
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            resultsDiv.style.display = 'none';
+            
+            if (!vin) {
+                errorDiv.textContent = 'Please enter a VIN';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (!window.LeaseHackulator.validateVIN(vin)) {
+                errorDiv.textContent = 'Invalid VIN format';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            try {
+                // Show loading state
+                vinInput.classList.add('loading');
+                vinInput.disabled = true;
+                
+                // Decode VIN
+                const vinData = await window.LeaseHackulator.dataService.decodeVIN(vin);
+                
+                if (vinData && vinData.isValid) {
+                    successDiv.textContent = 'VIN decoded successfully!';
+                    successDiv.style.display = 'block';
+                    
+                    resultsDiv.innerHTML = `
+                        <strong>Vehicle Information:</strong><br>
+                        Make: ${vinData.make}<br>
+                        Model: ${vinData.model}<br>
+                        Year: ${vinData.year}<br>
+                        Body Class: ${vinData.bodyClass || 'Unknown'}<br>
+                        Fuel Type: ${vinData.fuelType || 'Unknown'}
+                    `;
+                    resultsDiv.style.display = 'block';
+                    
+                    // Announce to screen readers
+                    window.LeaseHackulator.AccessibilityUtils.announce(
+                        `VIN decoded: ${vinData.year} ${vinData.make} ${vinData.model}`,
+                        'polite'
+                    );
+                    
+                } else {
+                    errorDiv.textContent = 'Unable to decode VIN';
+                    errorDiv.style.display = 'block';
+                }
+                
+            } catch (error) {
+                console.error('VIN decoding failed:', error);
+                errorDiv.textContent = 'VIN decoding failed: ' + error.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                // Remove loading state
+                vinInput.classList.remove('loading');
+                vinInput.disabled = false;
+            }
+        }
+        
+        // Initialize the demo when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            demoApp.init();
+        });
+    </script>
+</body>
+</html>

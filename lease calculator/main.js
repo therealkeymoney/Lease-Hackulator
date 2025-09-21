@@ -12,6 +12,7 @@ import {
     VIN_MAPPING, 
     EV_INCENTIVES, 
     ZIP_TO_STATE,
+    WMI_MAPPING,
     MAKES 
 } from './data/constants.js';
 
@@ -125,6 +126,7 @@ window.LeaseHackulator = {
     VIN_MAPPING,
     EV_INCENTIVES,
     ZIP_TO_STATE,
+    WMI_MAPPING,
     MAKES,
     
     // Utility functions

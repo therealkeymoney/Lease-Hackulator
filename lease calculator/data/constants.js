@@ -137,6 +137,93 @@ export const VIN_MAPPING = {
     }
 };
 
+// WMI (World Manufacturer Identifier) mapping for VIN decoding
+export const WMI_MAPPING = {
+    // Complete country codes by first character
+    countryRegions: {
+        'A': 'Africa',     'B': 'Africa',     'C': 'Africa',
+        'D': 'Europe',     'E': 'Europe',     'F': 'Europe', 
+        'G': 'Europe',     'H': 'Asia',       'J': 'Asia',
+        'K': 'Asia',       'L': 'Asia',       'M': 'Asia',
+        'N': 'Asia',       'P': 'Asia',       'R': 'Asia',
+        'S': 'Europe',     'T': 'Europe',     'U': 'Europe',
+        'V': 'Europe',     'W': 'Europe',     'X': 'Europe',
+        'Y': 'Europe',     'Z': 'Europe',     '1': 'North America',
+        '2': 'North America', '3': 'North America', '4': 'North America',
+        '5': 'North America', '6': 'Oceania',  '7': 'Oceania/North America',
+        '8': 'South America', '9': 'South America', '0': 'Special'
+    },
+
+    // Complete country assignments
+    countries: {
+        // Africa (A-C)
+        'AA': 'South Africa', 'AB': 'South Africa', 'AC': 'South Africa',
+        'AD': 'South Africa', 'AE': 'South Africa', 'AF': 'South Africa',
+        'AG': 'South Africa', 'AH': 'South Africa', 'AJ': 'Ivory Coast',
+        'AK': 'Ivory Coast', 'AL': 'Lesotho', 'AM': 'Lesotho',
+        'AN': 'Botswana', 'AP': 'Botswana', 'AR': 'Namibia',
+        'AS': 'Namibia', 'AT': 'Madagascar', 'AU': 'Madagascar',
+        'AV': 'Mauritius', 'AW': 'Mauritius', 'AX': 'Tunisia',
+        'AY': 'Tunisia', 'AZ': 'Cyprus', 'A1': 'Cyprus',
+        'A2': 'Zimbabwe', 'A3': 'Zimbabwe', 'A4': 'Mozambique',
+        'A5': 'Mozambique',
+
+        'BA': 'Angola', 'BB': 'Angola', 'BC': 'Ethiopia',
+        'BF': 'Kenya', 'BG': 'Kenya', 'BH': 'Rwanda',
+        'BL': 'Nigeria', 'BR': 'Algeria', 'BT': 'Swaziland',
+        'BU': 'Uganda', 'B3': 'Libya', 'B4': 'Libya',
+
+        'CA': 'Egypt', 'CB': 'Egypt', 'CF': 'Morocco',
+        'CG': 'Morocco', 'CL': 'Zambia', 'CM': 'Zambia',
+
+        // Asia (H-R)
+        'H': 'China',
+        'J': 'Japan',
+        'K': 'South Korea',
+        'L': 'China',
+        'MA': 'India',
+        'MF': 'Indonesia',
+
+        // Europe (S-Z)
+        'S': 'United Kingdom',
+        'T': 'Switzerland',
+        'U': 'Spain',
+        'V': 'France',
+        'W': 'Germany',
+        'X': 'Russia',
+        'Y': 'Sweden',
+        'Z': 'Italy',
+
+        // North America
+        '1': 'United States',
+        '2': 'Canada',
+        '3': 'Mexico',
+        '4': 'United States',
+        '5': 'United States',
+
+        // Oceania
+        '6': 'Australia',
+        '7': 'New Zealand',
+
+        // South America
+        '8': 'Argentina',
+        '9': 'Brazil'
+    },
+
+    // Manufacturer assignments
+    manufacturers: {
+        'JHM': 'Honda',
+        'JTD': 'Toyota',
+        'WBA': 'BMW',
+        '1FA': 'Ford',
+        'WDC': 'Mercedes-Benz',
+        '5YJ': 'Tesla',
+        'SAL': 'Land Rover',
+        'ZAM': 'Maserati',
+        'ZFA': 'Fiat'
+    }
+};
+
 // ZIP code to state mapping with lookup functionality
 export const ZIP_TO_STATE = {
     ranges: [

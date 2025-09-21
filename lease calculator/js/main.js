@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.LeaseHackulator = LeaseHackulator;
     
     // Development helpers
-    if (process?.env?.NODE_ENV === 'development') {
+    if (typeof process !== 'undefined' && process?.env?.NODE_ENV === 'development') {
         window.LeaseHackulatorDebug = LeaseHackulator.debug;
         console.log('🔧 Debug tools available: window.LeaseHackulatorDebug');
     }

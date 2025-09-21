@@ -15,6 +15,7 @@ import {
 import { setSelectValue } from './domUtils.js';
 import { 
     safeGetElement, 
+    safeGetMappedElement,
     lookupStateByZip, 
     debounce,
     safeGetElementValue 
@@ -98,19 +99,23 @@ function attachVehicleEventListeners(suffix) {
  * @param {string} suffix - Form suffix
  */
 function attachPriceListeners(suffix) {
-    const msrpElement = safeGetElement(`msrp${suffix}`);
-    const sellingPriceElement = safeGetElement(`sellingPrice${suffix}`);
+    const msrpElement = safeGetMappedElement('msrp', suffix);
+    const sellingPriceElement = safeGetMappedElement('sellingPrice', suffix);
     
     if (msrpElement) {
         const debouncedUpdate = debounce(() => updateCapitalizedCost(suffix), 300);
         msrpElement.addEventListener('input', debouncedUpdate);
         msrpElement.addEventListener('blur', () => updateCapitalizedCost(suffix));
+    } else {
+        console.warn(`MSRP field not found for vehicle ${suffix}`);
     }
     
     if (sellingPriceElement) {
         const debouncedUpdate = debounce(() => updateCapitalizedCost(suffix), 300);
         sellingPriceElement.addEventListener('input', debouncedUpdate);
         sellingPriceElement.addEventListener('blur', () => updateCapitalizedCost(suffix));
+    } else {
+        console.warn(`Selling price field not found for vehicle ${suffix}`);
     }
 }
 
@@ -119,14 +124,16 @@ function attachPriceListeners(suffix) {
  * @param {string} suffix - Form suffix
  */
 function attachTermMileageListeners(suffix) {
-    const termElement = safeGetElement(`term${suffix}`);
-    const mileageElement = safeGetElement(`mileage${suffix}`);
+    const termElement = safeGetMappedElement('term', suffix);
+    const mileageElement = safeGetMappedElement('mileage', suffix);
     
     if (termElement) {
         termElement.addEventListener('change', () => {
             updateResidualValue(suffix);
             updateAllCalculations(suffix);
         });
+    } else {
+        console.warn(`Term field not found for vehicle ${suffix}`);
     }
     
     if (mileageElement) {
@@ -134,6 +141,8 @@ function attachTermMileageListeners(suffix) {
             updateResidualValue(suffix);
             updateAllCalculations(suffix);
         });
+    } else {
+        console.warn(`Mileage field not found for vehicle ${suffix}`);
     }
 }
 
@@ -142,13 +151,15 @@ function attachTermMileageListeners(suffix) {
  * @param {string} suffix - Form suffix
  */
 function attachMakeListener(suffix) {
-    const makeElement = safeGetElement(`make${suffix}`);
+    const makeElement = safeGetMappedElement('make', suffix);
     
     if (makeElement) {
         makeElement.addEventListener('change', () => {
             updateFees(suffix);
             updateEvCredits(suffix);
         });
+    } else {
+        console.warn(`Make field not found for vehicle ${suffix}`);
     }
 }
 
@@ -157,18 +168,22 @@ function attachMakeListener(suffix) {
  * @param {string} suffix - Form suffix
  */
 function attachModelYearListeners(suffix) {
-    const modelElement = safeGetElement(`model${suffix}`);
-    const yearElement = safeGetElement(`year${suffix}`);
+    const modelElement = safeGetMappedElement('model', suffix);
+    const yearElement = safeGetMappedElement('year', suffix);
     
     if (modelElement) {
         const debouncedUpdate = debounce(() => updateEvCredits(suffix), 500);
         modelElement.addEventListener('input', debouncedUpdate);
         modelElement.addEventListener('blur', () => updateEvCredits(suffix));
+    } else {
+        console.warn(`Model field not found for vehicle ${suffix}`);
     }
     
     if (yearElement) {
         yearElement.addEventListener('change', () => updateEvCredits(suffix));
         yearElement.addEventListener('input', () => updateEvCredits(suffix));
+    } else {
+        console.warn(`Year field not found for vehicle ${suffix}`);
     }
 }
 
@@ -177,13 +192,15 @@ function attachModelYearListeners(suffix) {
  * @param {string} suffix - Form suffix
  */
 function attachStateListener(suffix) {
-    const stateElement = safeGetElement(`state${suffix}`);
+    const stateElement = safeGetMappedElement('state', suffix);
     
     if (stateElement) {
         stateElement.addEventListener('change', () => {
             updateTaxRate(suffix);
             updateEvCredits(suffix);
         });
+    } else {
+        console.warn(`State field not found for vehicle ${suffix}`);
     }
 }
 
@@ -192,7 +209,7 @@ function attachStateListener(suffix) {
  * @param {string} suffix - Form suffix
  */
 function attachZipListener(suffix) {
-    const zipElement = safeGetElement(`zip${suffix}`);
+    const zipElement = safeGetMappedElement('zip', suffix);
     
     if (zipElement) {
         const handleZipChange = async () => {
@@ -222,6 +239,8 @@ function attachZipListener(suffix) {
         const debouncedZipLookup = debounce(handleZipChange, 500);
         zipElement.addEventListener('input', debouncedZipLookup);
         zipElement.addEventListener('blur', handleZipChange);
+    } else {
+        console.warn(`ZIP field not found for vehicle ${suffix}`);
     }
 }
 
@@ -230,7 +249,7 @@ function attachZipListener(suffix) {
  * @param {string} suffix - Form suffix
  */
 function attachVinListener(suffix) {
-    const vinElement = safeGetElement(`vin${suffix}`);
+    const vinElement = safeGetMappedElement('vin', suffix);
     
     if (vinElement) {
         const handleVinDecode = async () => {
@@ -248,25 +267,27 @@ function attachVinListener(suffix) {
                     if (vinData.success) {
                         // Update form fields with decoded data
                         if (vinData.make) {
-                            setSelectValue(`make${suffix}`, vinData.make);
+                            const makeSet = setSelectValue(`manufacturer${suffix}`, vinData.make);
+                            if (makeSet) {
+                                updateFees(suffix);
+                            }
                         }
                         
                         if (vinData.model) {
-                            const modelElement = safeGetElement(`model${suffix}`);
+                            const modelElement = safeGetMappedElement('model', suffix);
                             if (modelElement) {
                                 modelElement.value = vinData.model;
                             }
                         }
                         
                         if (vinData.year) {
-                            const yearElement = safeGetElement(`year${suffix}`);
+                            const yearElement = safeGetMappedElement('year', suffix);
                             if (yearElement) {
                                 yearElement.value = vinData.year;
                             }
                         }
                         
                         // Update dependent calculations
-                        updateFees(suffix);
                         updateEvCredits(suffix);
                         
                         showVinDecodeStatus(suffix, 'success');
@@ -298,6 +319,8 @@ function attachVinListener(suffix) {
             }
             e.target.value = value;
         });
+    } else {
+        console.warn(`VIN field not found for vehicle ${suffix}`);
     }
 }
 

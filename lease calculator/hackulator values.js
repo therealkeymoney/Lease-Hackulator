@@ -1,4 +1,43 @@
-const wmiMapping = {
+/**
+ * ============================================================================
+ * LEASE HACKULATOR - LEGACY MONOLITHIC VERSION
+ * ============================================================================
+ * 
+ * ⚠️  DEPRECATED: This file has been refactored into a modular architecture.
+ * 
+ * 🆕 NEW MODULAR STRUCTURE:
+ * - js/data/constants.js     - All data constants and mappings
+ * - js/utils/api.js          - API utilities with error handling  
+ * - js/utils/helpers.js      - General utility functions
+ * - js/core/calculations.js  - Core calculation logic
+ * - js/core/domUtils.js      - DOM manipulation utilities
+ * - js/core/eventHandlers.js - Event listener management
+ * - js/main.js               - Main initialization and orchestration
+ * 
+ * 📈 IMPROVEMENTS MADE:
+ * ✅ Split 1,824-line monolithic file into 7 focused modules
+ * ✅ Added comprehensive error handling throughout
+ * ✅ Eliminated duplicate data mappings and redundant code
+ * ✅ Implemented modern ES6+ features (modules, async/await)
+ * ✅ Added consistent naming conventions and documentation
+ * ✅ Optimized event listeners with debouncing
+ * ✅ Improved maintainability with clear separation of concerns
+ * 
+ * 🔧 TO USE THE NEW VERSION:
+ * Include the modular scripts in your HTML:
+ * <script type="module" src="js/data/constants.js"></script>
+ * <script type="module" src="js/utils/api.js"></script>
+ * <script type="module" src="js/utils/helpers.js"></script>
+ * <script type="module" src="js/core/calculations.js"></script>
+ * <script type="module" src="js/core/domUtils.js"></script>
+ * <script type="module" src="js/core/eventHandlers.js"></script>
+ * <script type="module" src="js/main.js"></script>
+ * 
+ * This file is kept for reference and backward compatibility only.
+ * ============================================================================
+ */
+
+// Original monolithic code below (preserved for reference)
   // Complete country codes by first character
   countryRegions: {
     'A': 'Africa',     'B': 'Africa',     'C': 'Africa',

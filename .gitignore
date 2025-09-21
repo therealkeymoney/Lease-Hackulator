@@ -1,0 +1,26 @@
+# Node modules
+node_modules/
+
+# Test files
+test-*.js
+test-*.html
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+tmp/
+temp/

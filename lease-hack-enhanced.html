@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lease Hack Enhanced</title>
+    <style>
+        body {
+            background-color: #121212; /* Dark theme background */
+            color: white; /* Default text color */
+        }
+        h1, h2, h3, h4, h5, h6 {
+            color: #BA0000; /* Title and header color */
+        }
+        input[type='text'] {
+            /* Styles for input fields */
+            text-decoration: none;
+            /* Remove dollar sign from input fields */
+        }
+    </style>
+</head>
+<body>
+    <h1>Lease Hack Enhanced</h1>
+    <form>
+        <label for="leaseType">Select Lease Type:</label>
+        <select id="leaseType" name="leaseType">
+            <option value="New Subvented">New Subvented</option>
+            <option value="New Closed End">New Closed End</option>
+            <option value="CPO Subvented">CPO Subvented</option>
+            <option value="CPO Closed End">CPO Closed End</option>
+            <option value="Used Subvented">Used Subvented</option>
+            <option value="Used Closed End">Used Closed End</option>
+            <option value="New Single Payment">New Single Payment</option>
+            <option value="CPO Single Payment">CPO Single Payment</option>
+            <option value="Used Single Payment">Used Single Payment</option>
+        </select>
+        <input type="text" name="amount" placeholder="Enter amount">
+        <button type="submit">Submit</button>
+    </form>
+    <script>
+        // Implementing double discount logic for CPO/Used combined with Subvented/Single Payment leases
+        function applyDiscount() {
+            const leaseType = document.getElementById('leaseType').value;
+            let discount = 0;
+            if (leaseType.includes('CPO') || leaseType.includes('Used')) {
+                if (leaseType.includes('Subvented') || leaseType.includes('Single Payment')) {
+                    discount = 20; // Example discount percentage
+                }
+            }
+            // Apply discount logic here
+        }
+        document.querySelector('form').addEventListener('submit', applyDiscount);
+    </script>
+</body>
+</html>
